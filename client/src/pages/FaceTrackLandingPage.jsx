@@ -1,17 +1,15 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+
 import {
-  FaSignInAlt,
-  FaUserPlus,
+
   FaChartLine,
   FaUsers,
   FaFileExport,
-  FaBars,
-} from "react-icons/fa";
-import { useState } from "react";
 
+} from "react-icons/fa";
+
+import Navbar from "../components/Navbar";
 const FaceTrackLandingPage = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <div className="bg-white text-gray-900 font-sans overflow-hidden">
@@ -32,54 +30,7 @@ const FaceTrackLandingPage = () => {
         ></motion.div>
       </div>
 
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          {/* Logo */}
-          <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
-           <Link to={'/'}> FaceTrack</Link>
-          </div>
-          {/* Hamburger Menu for Mobile */}
-          <button
-            className="text-gray-600 hover:text-blue-500 md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <FaBars className="text-2xl" />
-          </button>
-          {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-6">
-            <Link
-              to={'/login'}
-              className="text-gray-600 hover:text-blue-500 transition duration-300 flex items-center"
-            >
-              <FaSignInAlt className="mr-2" /> Login
-            </Link>
-            <Link
-              to={'/signup'}
-              className="text-gray-600 hover:text-blue-500 transition duration-300 flex items-center"
-            >
-              <FaUserPlus className="mr-2" /> Sign Up
-            </Link>
-          </div>
-        </div>
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white shadow-md">
-            <a
-              href="#"
-              className="block px-6 py-2 text-gray-600 hover:text-blue-500"
-            >
-              <FaSignInAlt className="inline-block mr-2" /> Login
-            </a>
-            <a
-              href="#"
-              className="block px-6 py-2 text-gray-600 hover:text-blue-500"
-            >
-              <FaUserPlus className="inline-block mr-2" /> Sign Up
-            </a>
-          </div>
-        )}
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="h-screen flex items-center justify-center relative z-10">

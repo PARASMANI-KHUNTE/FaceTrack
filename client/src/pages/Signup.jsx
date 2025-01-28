@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import api from '../utils/api';
 import Loader from '../components/Loader';
 import { toast } from '../components/Toast';
+import {jwtDecode} from 'jwt-decode';
+import Navbar from "../components/Navbar";
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -28,8 +31,29 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+    const token = credentialResponse?.credential; // Ensure token exists
+      if (!token) {
+        throw new Error("Google login failed: No token received.");
+      }
+
+      const decoded = jwtDecode(token); // Decode the token
+      const { sub: googleId, name, email, picture } = decoded; // Extract details
+      const response = await api.post('users/GoogleLogin', { googleId, name, email, picture });
+      localStorage.setItem('token', response.data.token);
+    
+      toast.success("Login Successful");
+      toast.success('Google login successful!');
+      navigate('/client-panel');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+       <Navbar />
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <input
@@ -46,13 +70,20 @@ const Signup = () => {
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           className="w-full p-2 mb-4 border rounded"
         />
-        <input
+       <input
           type="text"
           placeholder="Phone"
           value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Only update if the length is <= 10 and contains only numbers
+            if (value.length <= 10 && /^[0-9]*$/.test(value)) {
+              setFormData({ ...formData, phone: value });
+            }
+          }}
           className="w-full p-2 mb-4 border rounded"
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -70,6 +101,14 @@ const Signup = () => {
         <button type="submit" className="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700">
           {loading ? <Loader /> : 'Sign Up'}
         </button>
+        <div className="mt-6 text-center">
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => toast.error('Google login failed. Please try again.')}
+            />
+          </GoogleOAuthProvider>
+        </div>
       </form>
     </div>
   );

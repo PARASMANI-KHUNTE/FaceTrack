@@ -5,6 +5,7 @@ import api from '../utils/api';
 import Loader from '../components/Loader';
 import { toast } from 'react-toastify';
 import {jwtDecode} from 'jwt-decode';
+import Navbar from "../components/Navbar";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -50,6 +51,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+       <Navbar />
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <input
