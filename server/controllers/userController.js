@@ -358,7 +358,9 @@ const verifyToken = async (req,res) =>{
   
 const updateProfileDetails  = async (req, res) => {
       const { name, phone, organization } = req.body;
-      const userId = req.user.id; 
+      const userId = req.user.userId; // Use "userId" as defined in the token payload.
+
+     
   
       try {
         // Find the user by ID and update the specified fields
