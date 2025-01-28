@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const {sendOTP,verifyOTP} =  require('../utils/sendEmail')
 // Get all employers
 exports.getEmployers = async (req, res) => {
     try {
@@ -51,3 +52,48 @@ exports.deleteEmployer = async (req, res) => {
         res.status(500).json({ message: 'Error deleting employer', error });
     }
 };
+
+
+
+
+exports.OtpSend = async (req,res) =>{
+        const {email} = req.body;
+        if(!email){
+            return res.status(400).json({
+                message : " please provide email"
+            })
+        }
+        try {
+            await sendOTP(email)
+            return res.status(200).json({
+                success : true ,
+                message  : "Otp has been sent"
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message : error 
+            })
+        }
+}
+exports.OtpVerify = async (req,res) =>{
+    const {email , otp} = req.body;
+    if(!email || !otp){
+        return res.status(400).json({
+            message  : "please provide  otp "
+        })
+    }
+
+    try {
+        await verifyOTP(email,otp)
+        return res.status(200).json({
+            success : true ,
+            message  : "Otp has been verified"
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success : false ,
+            message : error 
+        })
+    }
+
+}

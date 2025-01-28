@@ -17,6 +17,6 @@ router.put('/update-password', updatePassword);
 router.post('/GoogleLogin',googleLogin )
 router.get('/:id',getUserById);
 router.post('/verify-token',verifyToken);
-
 router.put("/updateProfileDetails",authMiddleware,updateProfileDetails)
+
 module.exports = router;

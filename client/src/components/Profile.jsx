@@ -86,6 +86,64 @@ const Profile = () => {
     }
   };
 
+
+  const handleDeleteAccount = async () => {
+    const token = localStorage.getItem("token");
+    
+    if (!token) {
+      toast.error("User is not authenticated.");
+      return;
+    }
+  
+    try {
+      const decoded = jwtDecode(token);
+      const { userId, email } = decoded;
+  
+      const userConfirmed = window.confirm("Are you sure you want to delete your account?");
+      if (!userConfirmed) {
+        console.log("Action canceled.");
+        return;
+      }
+  
+      // Step 1: Send OTP to the user's email
+      const otpResponse = await api.post("employers/OtpSend", { email });
+      if (otpResponse.data.success) {
+        const userOtp = window.prompt(`Please enter the OTP sent to ${email}:`);
+        
+        if (userOtp) {
+          // Step 2: Verify the OTP
+          const verifyOtpResponse = await api.post("employers/verifyOtp", {
+            email,
+            otp: userOtp,
+          });
+  
+          if (!verifyOtpResponse.data.success) {
+            toast.error("Invalid OTP. Please try again.");
+            return;
+          }
+  
+          // Step 3: Delete the account
+          const deleteAccountResponse = await api.delete(`employers/${userId}`);
+          if (deleteAccountResponse.status === 200) {
+            localStorage.removeItem("token");
+            toast.success("Your account has been deleted successfully.");
+            navigate("/");
+          } else {
+            toast.error("Failed to delete the account. Please try again.");
+          }
+        } else {
+          toast.error("You must enter the OTP to proceed.");
+        }
+      } else {
+        toast.error("Failed to send OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error occurred:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
+  
+
   if (!user) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -205,6 +263,14 @@ const Profile = () => {
         whileTap={{ scale: 0.95 }}
       >
         Logout
+      </motion.button>
+      <motion.button
+        onClick={handleDeleteAccount}
+        className="text-red-500 border px-4 py-2 rounded hover:text-white hover:bg-red-500 transition-all"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Delete Account
       </motion.button>
     </motion.div>
   );
