@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors')
 const userRoutes = require('./routes/userRoutes');
 // const employeeRoutes = require('./routes/employeeRoutes');
-// const employerRoutes = require('./routes/employerRoutes');
+const employerRoutes = require('./routes/employerRoutes');
 const dotenv = require('dotenv')
 dotenv.config();
 const db = require('./config/dbConfig'); // MongoDB connection
@@ -16,7 +16,7 @@ app.use(cors({
 // Routes
 app.use('/api/users', userRoutes);
 // app.use('/api/employees', employeeRoutes);
-// app.use('/api/employers', employerRoutes);
+app.use('/api/employers', employerRoutes);
 
 app.get('/', (req, res) => {
     res.send('Employee Management System API');
