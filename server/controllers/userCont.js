@@ -2,7 +2,7 @@ const User = require('../models/User')
 const argon2 = require('argon2')
 const {sendOTP,verifyOTP} =  require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
-
+const { generateToken, tokenVerify ,generateTokenForPassword} = require('../utils/tokenProvider')
 const signupAsEmployer = async (req,res) => {
     try {
         const { name, email, phone, password, organization } = req.body;
@@ -153,7 +153,7 @@ const loginAsEmployer = async (req, res) => {
       
           // Create a JWT payload
           const payload = {
-            id: user._id,
+            userId: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
@@ -166,12 +166,6 @@ const loginAsEmployer = async (req, res) => {
           return res.status(200).json({
             message: 'Login successful.',
             token: token,
-            user: {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-            },
           });
         } catch (error) {
           console.error('Error during login:', error);
@@ -309,7 +303,7 @@ const googleLogin =  async (req, res) => {
     }
   }
   
-  const getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
     const { id } = req.params; // Extract the user ID from the request parameters
   
     // Validate the input
@@ -342,11 +336,29 @@ const googleLogin =  async (req, res) => {
       });
     }
   };
+
+const verifyToken = async (req,res) =>{
+  const {token} = req.body;
+  try {
+    await tokenVerify(token)
+    return res.status(200).json({
+      success  : true,
+      message : "Token Is valid"
+    })
+  } catch (error) {
+    return res.status(404).json({
+      success  : false,
+      message : "Token Is invalid",
+      error : error
+    })
+  }
   
-// Endpoint to update user profile details
+  
+}
+  
 const updateProfileDetails  = async (req, res) => {
       const { name, phone, organization } = req.body;
-      const userId = req.user.id; // Extracted from the token by authMiddleware
+      const userId = req.user.id; 
   
       try {
         // Find the user by ID and update the specified fields
@@ -367,4 +379,4 @@ const updateProfileDetails  = async (req, res) => {
       }
     }
   
-module.exports =  {signupAsEmployer ,VerifyOtp ,loginAsEmployer,loginAsEmployer,resetPassword,updatePassword ,googleLogin,getUserById,updateProfileDetails}
+module.exports =  {signupAsEmployer ,VerifyOtp ,loginAsEmployer,loginAsEmployer,resetPassword,updatePassword ,googleLogin,getUserById,updateProfileDetails,verifyToken}

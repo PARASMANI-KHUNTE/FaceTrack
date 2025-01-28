@@ -37,7 +37,7 @@ const OTP = Math.floor(Math.random() * 9000) + 1000;
   }
 };
 
-const verifyOTP = async (email, OTP) => {
+const  verifyOTP = async (email, OTP) => {
   // Retrieve the OTP details from the store
   const otpDetails = otpStore.get(email);
 

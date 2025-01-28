@@ -15,16 +15,7 @@ const Profile = () => {
     organization: user?.organization || "",
   });
   
-  // Update the `useEffect` to handle initial values properly
-  useEffect(() => {
-    if (user) {
-      setUpdatedUser({
-        name: user.name || "",
-        phone: user.phone || "",
-        organization: user.organization || "",
-      });
-    }
-  }, [user]);
+
   
   const token = localStorage.getItem("token");
 
@@ -36,6 +27,7 @@ const Profile = () => {
     }
 
     let decoded = jwtDecode(token);
+
 
 
     const fetchUser = async () => {
@@ -60,9 +52,10 @@ const Profile = () => {
   }, [token, navigate]);
 
   const handleLogout = () => {
-    toast.success("Logged out successfully!");
+    
     localStorage.removeItem("token");
     navigate("/login");
+    toast.success("Logged out successfully!");
   };
 
   const handleEditToggle = () => {
