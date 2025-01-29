@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import OtpPrompt from "./components/OtpPrompt";
 
 
 const App = () => {
@@ -28,6 +29,10 @@ const App = () => {
         <Route path="/client-panel" element={ <ProtectedRoute>
               <ClientPanel />
             </ProtectedRoute>} />
+        <Route path="/otpPrompt" element={ <ProtectedRoute>
+          <OtpPrompt />
+            </ProtectedRoute>} />
+            
         
       
         

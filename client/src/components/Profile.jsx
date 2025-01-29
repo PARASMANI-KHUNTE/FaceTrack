@@ -10,13 +10,12 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({
-    name: user?.name || "",
-    phone: user?.phone || "",
-    organization: user?.organization || "",
+    name: "",
+    phone: "",
+    organization: "",
   });
-  
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -26,9 +25,7 @@ const Profile = () => {
       return;
     }
 
-    let decoded = jwtDecode(token);
-
-
+    const decoded = jwtDecode(token);
 
     const fetchUser = async () => {
       try {
@@ -52,7 +49,6 @@ const Profile = () => {
   }, [token, navigate]);
 
   const handleLogout = () => {
-    
     localStorage.removeItem("token");
     navigate("/login");
     toast.success("Logged out successfully!");
@@ -61,7 +57,7 @@ const Profile = () => {
   const handleEditToggle = () => {
     setEditing(!editing);
     if (!editing) {
-      setUpdatedUser(user); // Reset the changes when exiting edit mode
+      setUpdatedUser(user); // Reset changes when exiting edit mode
     }
   };
 
@@ -86,54 +82,15 @@ const Profile = () => {
     }
   };
 
-
-  const handleDeleteAccount = async () => {
-    const token = localStorage.getItem("token");
-    
-    if (!token) {
-      toast.error("User is not authenticated.");
-      return;
-    }
-  
+  const handleDeleteRequest = async () => {
     try {
       const decoded = jwtDecode(token);
-      const { userId, email } = decoded;
-  
-      const userConfirmed = window.confirm("Are you sure you want to delete your account?");
-      if (!userConfirmed) {
-        console.log("Action canceled.");
-        return;
-      }
-  
-      // Step 1: Send OTP to the user's email
+      const { email, userId } = decoded;
+
       const otpResponse = await api.post("employers/OtpSend", { email });
+
       if (otpResponse.data.success) {
-        const userOtp = window.prompt(`Please enter the OTP sent to ${email}:`);
-        
-        if (userOtp) {
-          // Step 2: Verify the OTP
-          const verifyOtpResponse = await api.post("employers/verifyOtp", {
-            email,
-            otp: userOtp,
-          });
-  
-          if (!verifyOtpResponse.data.success) {
-            toast.error("Invalid OTP. Please try again.");
-            return;
-          }
-  
-          // Step 3: Delete the account
-          const deleteAccountResponse = await api.delete(`employers/${userId}`);
-          if (deleteAccountResponse.status === 200) {
-            localStorage.removeItem("token");
-            toast.success("Your account has been deleted successfully.");
-            navigate("/");
-          } else {
-            toast.error("Failed to delete the account. Please try again.");
-          }
-        } else {
-          toast.error("You must enter the OTP to proceed.");
-        }
+        navigate("/otpPrompt", { state: { email, id: userId } });
       } else {
         toast.error("Failed to send OTP. Please try again.");
       }
@@ -142,11 +99,13 @@ const Profile = () => {
       toast.error("An unexpected error occurred. Please try again.");
     }
   };
-  
+
+  const openDeleteModal = () => setIsDeleteModalOpen(true);
+  const closeDeleteModal = () => setIsDeleteModalOpen(false);
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-50 to-purple-50">
         <motion.div
           className="text-lg text-gray-600"
           initial={{ opacity: 0 }}
@@ -161,117 +120,182 @@ const Profile = () => {
 
   return (
     <motion.div
-      className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg mt-10 flex flex-col items-center gap-4"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-gradient-to-r flex justify-center items-center p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <img
-        src={user.profileUrl || "https://i.pinimg.com/736x/76/f3/f3/76f3f3007969fd3b6db21c744e1ef289.jpg"}
-        alt="Profile"
-        className="w-24 h-24 rounded-full shadow-md"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = "https://i.pinimg.com/736x/76/f3/f3/76f3f3007969fd3b6db21c744e1ef289.jpg";
-        }}
-      />
+      <motion.div
+        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8 space-y-6"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        {/* Profile Header */}
+        <div className="flex flex-col items-center space-y-4">
+          <motion.img
+            src={user.profileUrl || "https://i.pinimg.com/736x/76/f3/f3/76f3f3007969fd3b6db21c744e1ef289.jpg"}
+            alt="Profile"
+            className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://i.pinimg.com/736x/76/f3/f3/76f3f3007969fd3b6db21c744e1ef289.jpg";
+            }}
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          />
+          <h2 className="text-3xl font-bold text-gray-800">{user.name || "N/A"}</h2>
+          <p className="text-gray-500">{user.email || "Email not provided"}</p>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">{user.role || "User"}</span>
+            <span
+              className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                user.isVerified ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              }`}
+            >
+              {user.isVerified ? "Verified" : "Not Verified"}
+            </span>
+          </div>
+        </div>
 
-      {editing ? (
-        <input
-          type="text"
-          name="name"
-          value={updatedUser.name}
-          onChange={handleChange}
-          placeholder="Name"
-          className="border p-2 rounded w-full"
-        />
-      ) : (
-        <h2 className="text-2xl font-bold text-gray-800">{user.name || "N/A"}</h2>
-      )}
+        {/* Profile Details */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Organization</label>
+            {editing ? (
+              <input
+                type="text"
+                name="organization"
+                value={updatedUser.organization}
+                onChange={handleChange}
+                placeholder="Organization"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <p className="text-gray-600">{user.organization || "No organization"}</p>
+            )}
+          </div>
 
-      <p className="text-gray-600">{user.email || "Email not provided"}</p>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Phone</label>
+            {editing ? (
+              <input
+                type="text"
+                name="phone"
+                value={updatedUser.phone}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 10 && /^[0-9]*$/.test(value)) {
+                    handleChange(e);
+                  }
+                }}
+                placeholder="Phone"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onBlur={(e) => {
+                  if (e.target.value.length !== 10) {
+                    toast.error("Phone number must be exactly 10 digits.");
+                  }
+                }}
+              />
+            ) : (
+              <p className="text-gray-600">
+                📞 {user.phone && /^\d{10}$/.test(user.phone) ? user.phone : "Phone not provided"}
+              </p>
+            )}
+          </div>
+        </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-gray-700 font-medium">{user.role || "User"}</span>
-        <span
-          className={`px-3 py-1 text-xs font-semibold rounded-full ${user.isVerified ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}
-        >
-          {user.isVerified ? "Verified" : "Not Verified"}
-        </span>
-      </div>
+        {/* Action Buttons */}
+        <div className="flex justify-center space-x-4">
+          {editing ? (
+            <>
+              <motion.button
+                onClick={handleSave}
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Save
+              </motion.button>
+              <motion.button
+                onClick={handleEditToggle}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Cancel
+              </motion.button>
+            </>
+          ) : (
+            <motion.button
+              onClick={handleEditToggle}
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Edit Profile
+            </motion.button>
+          )}
+        </div>
 
-      {editing ? (
-        <input
-          type="text"
-          name="organization"
-          value={updatedUser.organization}
-          onChange={handleChange}
-          placeholder="Organization"
-          className="border p-2 rounded w-full"
-        />
-      ) : (
-        <p className="text-gray-600">{user.organization || "No organization"}</p>
-      )}
-
-      {editing ? (
-        <input
-          type="text"
-          name="phone"
-          value={updatedUser.phone}
-          onChange={handleChange}
-          placeholder="Phone"
-          className="border p-2 rounded w-full"
-        />
-      ) : (
-        <p className="text-gray-600">📞 {user.phone || "Phone not provided"}</p>
-      )}
-
-      {editing ? (
-        <div className="flex gap-2">
+        {/* Logout and Delete Buttons */}
+        <div className="flex justify-center space-x-4">
           <motion.button
-            onClick={handleSave}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-all"
+            onClick={handleLogout}
+            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Save Changes
+            Logout
           </motion.button>
           <motion.button
-            onClick={handleEditToggle}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-all"
+            onClick={openDeleteModal}
+            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Cancel
+            Delete Account
           </motion.button>
         </div>
-      ) : (
-        <motion.button
-          onClick={handleEditToggle}
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Edit Profile
-        </motion.button>
-      )}
+      </motion.div>
 
-      <motion.button
-        onClick={handleLogout}
-        className="text-red-500 border px-4 py-2 rounded hover:text-white hover:bg-red-500 transition-all"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        Logout
-      </motion.button>
-      <motion.button
-        onClick={handleDeleteAccount}
-        className="text-red-500 border px-4 py-2 rounded hover:text-white hover:bg-red-500 transition-all"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        Delete Account
-      </motion.button>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white rounded-lg p-6 w-96 text-center"
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <h2 className="text-xl font-bold mb-4">Delete Account</h2>
+            <p className="mb-6 text-gray-600">Are you sure you want to delete your account? This action cannot be undone.</p>
+            <div className="flex justify-center space-x-4">
+              <motion.button
+                onClick={handleDeleteRequest}
+                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Yes, Delete
+              </motion.button>
+              <motion.button
+                onClick={closeDeleteModal}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Cancel
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

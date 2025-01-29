@@ -117,7 +117,7 @@ const FaceTrackLandingPage = () => {
             </motion.div>
           </div>
         </div>
-      </section> */
+      </section> 
 
       {/* Footer */}
       <footer className="bg-gray-200 py-10 relative z-10">

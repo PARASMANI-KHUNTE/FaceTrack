@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  const location = useLocation();
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
     const verifyToken = async () => {
+      const token = localStorage.getItem("token"); // Get token inside function
+
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+
       try {
         const response = await api.post("/users/verify-token", { token });
+
         if (response.data.success) {
           setIsAuthenticated(true);
         } else {
@@ -21,22 +28,20 @@ const ProtectedRoute = ({ children }) => {
       }
     };
 
-    if (token) {
-      verifyToken();
-    } else {
-      setIsAuthenticated(false);
+    verifyToken();
+  }, []); // Empty dependency array - runs only once on mount
+
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      navigate("/login"); // Redirect if not authenticated
     }
-  }, [token]);
+  }, [isAuthenticated, navigate]); // Runs when authentication status changes
 
   if (isAuthenticated === null) {
     return <div>Loading...</div>; // Show loading while verifying
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return children;
+  return isAuthenticated ? children : null; // Prevents rendering children before redirect
 };
 
 export default ProtectedRoute;
