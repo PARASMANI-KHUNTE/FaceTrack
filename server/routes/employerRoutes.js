@@ -5,7 +5,8 @@ const {
     getEmployerDetails,
     deleteEmployer,
     OtpVerify,
-    OtpSend
+    OtpSend,
+    EmployeeRegister
 } = require('../controllers/employerController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -18,4 +19,5 @@ router.get('/:id', getEmployerDetails);
 router.delete('/:id', deleteEmployer);
 router.post('/OtpSend',OtpSend)
 router.post('/verifyOtp',OtpVerify)
+router.post('/employee-register',EmployeeRegister)
 module.exports = router;

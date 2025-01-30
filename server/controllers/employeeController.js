@@ -1,8 +1,8 @@
-// const Employee = require('../models/employeeModel');
-// const User = require('../models/userModel');
+
+const User = require('../models/User');
 // const moment = require('moment');
 
-// // Controller for getting employee details
+// Controller for getting employee details
 // exports.getEmployee = async (req, res) => {
 //     try {
 //         const { id } = req.params;
@@ -98,3 +98,9 @@
 //         res.status(500).json({ message: 'Error fetching employers', error });
 //     }
 // };
+
+
+
+
+
+
