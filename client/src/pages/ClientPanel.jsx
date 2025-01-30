@@ -5,6 +5,7 @@ import EmployeeList from "../components/EmployeeList";
 import Attendance from "../components/Attendance";
 import Report from "../components/Report";
 import Profile from "../components/Profile";
+import Departments from "../components/Departments";
 
 const ClientPanel = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -14,6 +15,7 @@ const ClientPanel = () => {
     { id: "dashboard", label: "Dashboard", icon: "🏠" },
     { id: "employeelist", label: "Employee List", icon: "👥" },
     { id: "attendance", label: "Attendance", icon: "📅" },
+    { id: "department", label: "Departments", icon: "🏬" },
     { id: "report", label: "Report", icon: "📊" },
     { id: "profile", label: "Profile", icon: "👤" },
   ];
@@ -27,6 +29,8 @@ const ClientPanel = () => {
         return <EmployeeList />;
       case "attendance":
         return <Attendance />;
+      case "department":
+        return <Departments />;
       case "report":
         return <Report />;
       case "profile":

@@ -80,6 +80,112 @@ exports.OtpVerify = async (req,res) =>{
 }
 
 
+
+exports.addDepartment = async (req, res) => {
+    const { department, id } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found"
+        });
+    }
+
+    // Check if the user is an employer
+    if (user.role !== "employer") {
+        return res.status(403).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    // Check if the department already exists
+    if (user.department.includes(department)) {
+        return res.status(400).json({
+            success: false,
+            message: "Department already exists"
+        });
+    }
+
+    // Add the new department
+    user.department.push(department);
+    await user.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Department has been added"
+    });
+};
+
+
+exports.getDepartment = async (req, res) => {
+    const { id } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found"
+        });
+    }
+
+    // Check if the user is an employer
+    if (user.role !== "employer") {
+        return res.status(403).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    // Return the list of departments
+    return res.status(200).json({
+        success: true,
+        departments: user.department
+    });
+};
+
+exports.deleteDepartment = async (req, res) => {
+    const { department, id } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found"
+        });
+    }
+
+    // Check if the user is an employer
+    if (user.role !== "employer") {
+        return res.status(403).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    // Check if the department exists
+    if (!user.department.includes(department)) {
+        return res.status(400).json({
+            success: false,
+            message: "Department does not exist"
+        });
+    }
+
+    // Remove the department
+    user.department = user.department.filter(dept => dept !== department);
+    await user.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Department has been deleted"
+    });
+};
+
+
 exports.EmployeeRegister = async (req, res) => {
     try {
       console.log("Received req.body:", req.body); // Debugging

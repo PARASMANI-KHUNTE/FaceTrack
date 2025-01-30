@@ -6,7 +6,10 @@ const {
     deleteEmployer,
     OtpVerify,
     OtpSend,
-    EmployeeRegister
+    addDepartment,
+    getDepartment,
+    deleteDepartment,
+    EmployeeRegister,
 } = require('../controllers/employerController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -20,4 +23,7 @@ router.delete('/:id', deleteEmployer);
 router.post('/OtpSend',OtpSend)
 router.post('/verifyOtp',OtpVerify)
 router.post('/employee-register',EmployeeRegister)
+router.post('/addDepartment',addDepartment)
+router.post('/getDepartment',getDepartment)
+router.post('/deleteDepartment',deleteDepartment)
 module.exports = router;

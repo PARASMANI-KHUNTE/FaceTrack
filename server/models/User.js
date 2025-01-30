@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String},
   organization: { type: String },
+  department: [{ type: String }],
   isVerified: { type: Boolean, default: false },
   url: { type: String },
   role: { type: String, enum: ['admin', 'employer', 'employee'], required: true },
