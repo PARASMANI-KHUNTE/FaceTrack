@@ -276,4 +276,135 @@ exports.EmployeeRegister = async (req, res) => {
     }
   };
   
+
+
+
   
+  const faceapi = require("face-api.js"); // Ensure faceapi is imported
+
+  exports.checkEmployeeFace = async (req, res) => {
+    try {
+        const { embedding, id } = req.body;
+      
+
+        // Validate employer ID
+        if (!id) {
+            return res.status(400).json({ message: "Employer ID is required." });
+        }
+
+        // Convert embedding object to an array
+        let parsedEmbedding;
+        try {
+            if (Array.isArray(embedding)) {
+                parsedEmbedding = embedding.map(Number);
+            } else if (embedding instanceof Float32Array) {
+                parsedEmbedding = Array.from(embedding);
+            } else if (typeof embedding === "object" && embedding !== null) {
+                parsedEmbedding = Object.keys(embedding).map(key => Number(embedding[key]));
+            } else {
+                throw new Error("Invalid embedding format.");
+            }
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid embedding format. Expected an array of numbers." });
+        }
+
+        // Ensure parsed embedding contains only valid numbers
+        if (!parsedEmbedding.every(num => typeof num === "number" && !isNaN(num))) {
+            return res.status(400).json({ message: "Embedding array contains invalid values." });
+        }
+
+      
+        // Fetch all employees under the given employer
+        let employees = await Employee.find({ employer: id });
+
+        if (!employees.length) {
+            // If no employees exist, create a new one
+            const newEmployee = new Employee({
+                employer: id,
+                embeddings: [parsedEmbedding],
+            });
+
+            await newEmployee.save();
+
+            return res.status(201).json({
+                message: "New face registered successfully",
+                employeeId: newEmployee._id
+            });
+        }
+
+        // Check if embedding already exists in any employee
+        for (let employee of employees) {
+            if (!employee.embeddings || employee.embeddings.length === 0) continue;
+
+            for (let storedEmbedding of employee.embeddings) {
+                const distance = faceapi.euclideanDistance(parsedEmbedding, storedEmbedding);
+
+                if (distance < 0.5) {  // Threshold for similarity
+                    return res.status(200).json({
+                        message: "Face already exists",
+                        employeeId: employee._id
+                    });
+                }
+            }
+        }
+
+        // If no match is found, add new embedding to the first employee
+        employees[0].embeddings.push(parsedEmbedding);
+        await employees[0].save();
+
+        return res.status(201).json({
+            message: "New face registered successfully",
+            employeeId: employees[0]._id
+        });
+
+    } catch (error) {
+        console.error("Error in face recognition:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.addEmployee = async (req, res) => {
+    try {
+        const { name, email, phone, password, employeeId } = req.body;
+
+        // Ensure employeeId is provided
+        if (!employeeId) {
+            return res.status(400).json({ message: "Employee ID is required." });
+        }
+
+        // Check if user already exists with the same email or phone
+        const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+        if (existingUser) {
+            return res.status(400).json({ message: "User with this email or phone number already exists." });
+        }
+
+        // Hash the password using Argon2
+        const hashedPassword = await argon2.hash(password);
+
+        // Create a new user with the role set to 'employee' and link to employeeId
+        const user = new User({
+            name,
+            email,
+            phone,
+            password: hashedPassword,
+            role: "employee", // Fixed the incorrect comment (was 'employer')
+            employeeId, // Store employeeId to link with face recognition data
+        });
+
+        // Save the user to the database
+        await user.save();
+        await sendOTP(email)
+        
+
+        // Return success response
+        res.status(201).json({
+            message: "User data has been saved. Enter OTP to verify now.",
+            userId: user._id, // Return only necessary user info
+            email : email ,
+            employeeId, // Ensure the front-end retains employee linkage
+        });
+    } catch (error) {
+        console.error("Error adding employee:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};

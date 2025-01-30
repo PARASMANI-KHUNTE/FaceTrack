@@ -160,7 +160,7 @@ const loginAsEmployer = async (req, res) => {
           };
       
           // Generate a JWT token
-          const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+          const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
       
           // Return success response
           return res.status(200).json({
@@ -277,7 +277,7 @@ const googleLogin =  async (req, res) => {
           email: user.email,
         };
   
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1hr' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
         return res.status(200).json({
           token: token,
           message: "Account has been created",
@@ -292,7 +292,7 @@ const googleLogin =  async (req, res) => {
         email: user.email,
       };
   
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1hr' });
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
       return res.status(200).json({
         token: token,
         message: "Login Successful",

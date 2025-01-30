@@ -11,6 +11,8 @@ const {
     deleteDepartment,
     editDepartment,
     EmployeeRegister,
+    checkEmployeeFace,
+    addEmployee
 } = require('../controllers/employerController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -28,4 +30,6 @@ router.post('/addDepartment',addDepartment)
 router.post('/getDepartment',getDepartment)
 router.post('/deleteDepartment',deleteDepartment)
 router.post('/editDepartment',editDepartment)
+router.post('/face-recognition',checkEmployeeFace)
+router.post('/addEmployee',addEmployee)
 module.exports = router;

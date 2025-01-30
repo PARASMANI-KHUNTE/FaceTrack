@@ -1,10 +1,22 @@
 const mongoose = require('mongoose');
 
 const employeeSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to Users
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'}, // Reference to Users
   employer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to employer user
   department: { type: String },
-  embeddings: { type: [Number], required: true }, // For face recognition or other purposes
+  embeddings: { 
+    type: [[Number]], // Array of arrays of numbers
+    required: true,
+    validate: {
+        validator: function(arr) {
+            return arr.every(innerArr => 
+                Array.isArray(innerArr) && innerArr.every(num => typeof num === 'number' && !isNaN(num))
+            );
+        },
+        message: "Embeddings must be a 2D array of valid numbers."
+    }
+}
+,  
   shift: { type: String }, // Shift details (e.g., "Morning", "Evening", etc.)
   tasks: { type: [String], default: [] }, // Task details can be expanded further if needed
   checkInOut: [
