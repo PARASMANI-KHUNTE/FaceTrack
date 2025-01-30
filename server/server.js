@@ -2,20 +2,18 @@ const express = require('express');
 const app = express();
 const cors = require('cors')
 const userRoutes = require('./routes/userRoutes');
-// const employeeRoutes = require('./routes/employeeRoutes');
 const employerRoutes = require('./routes/employerRoutes');
 const dotenv = require('dotenv')
 dotenv.config();
-const db = require('./config/dbConfig'); // MongoDB connection
+const db = require('./config/dbConfig'); 
 db()
 
 app.use(express.json());
 app.use(cors({
     origin : "http://localhost:5173"
 }))
-// Routes
+
 app.use('/api/users', userRoutes);
-// app.use('/api/employees', employeeRoutes);
 app.use('/api/employers', employerRoutes);
 
 app.get('/', (req, res) => {

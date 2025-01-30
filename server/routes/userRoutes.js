@@ -1,9 +1,3 @@
-
-// // router.post('/upload-profile-image', authMiddleware, upload.single('image'), uploadProfileImage);
-// // router.put('/update-profile', authMiddleware, updateProfileDetails);
-
-
-
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');

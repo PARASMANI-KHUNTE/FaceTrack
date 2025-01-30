@@ -2,7 +2,8 @@ const User = require('../models/User');
 const {sendOTP,verifyOTP} =  require('../utils/sendEmail')
 const argon2 = require('argon2')
 const Employee = require('../models/Employee');
-// Get all employers
+const faceapi = require("face-api.js");
+
 exports.getEmployers = async (req, res) => {
     try {
         const employers = await User.find({ role: 'employer' });
@@ -11,7 +12,6 @@ exports.getEmployers = async (req, res) => {
         res.status(500).json({ message: 'Error fetching employers', error });
     }
 };
-// Get employer details by ID
 exports.getEmployerDetails = async (req, res) => {
     try {
         const { id } = req.params;
@@ -24,7 +24,6 @@ exports.getEmployerDetails = async (req, res) => {
         res.status(500).json({ message: 'Error fetching employer details', error });
     }
 };
-// Delete an employer
 exports.deleteEmployer = async (req, res) => {
     try {
         const { id } = req.params;
@@ -115,8 +114,6 @@ exports.addDepartment = async (req, res) => {
         message: "Department has been added"
     });
 };
-
-
 exports.getDepartment = async (req, res) => {
     const { id } = req.body;
 
@@ -143,7 +140,6 @@ exports.getDepartment = async (req, res) => {
         departments: user.department
     });
 };
-
 exports.deleteDepartment = async (req, res) => {
     const { department, id } = req.body;
 
@@ -181,8 +177,6 @@ exports.deleteDepartment = async (req, res) => {
         message: "Department has been deleted"
     });
 };
-
-
 exports.editDepartment = async (req, res) => {
     const { oldDepartment, newDepartment, id } = req.body;
   
@@ -206,7 +200,6 @@ exports.editDepartment = async (req, res) => {
   
     return res.status(200).json({ success: true, message: "Department updated successfully" });
   }
-
 exports.EmployeeRegister = async (req, res) => {
     try {
       console.log("Received req.body:", req.body); // Debugging
@@ -275,14 +268,7 @@ exports.EmployeeRegister = async (req, res) => {
       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
   };
-  
-
-
-
-  
-  const faceapi = require("face-api.js"); // Ensure faceapi is imported
-
-  exports.checkEmployeeFace = async (req, res) => {
+exports.checkEmployeeFace = async (req, res) => {
     try {
         const { embedding, id } = req.body;
       
@@ -362,7 +348,6 @@ exports.EmployeeRegister = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
 exports.addEmployee = async (req, res) => {
     try {
         const { name, email, phone, password, employeeId } = req.body;
