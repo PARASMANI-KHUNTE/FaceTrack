@@ -78,9 +78,6 @@ exports.OtpVerify = async (req,res) =>{
     }
 
 }
-
-
-
 exports.addDepartment = async (req, res) => {
     const { department, id } = req.body;
 
@@ -185,6 +182,30 @@ exports.deleteDepartment = async (req, res) => {
     });
 };
 
+
+exports.editDepartment = async (req, res) => {
+    const { oldDepartment, newDepartment, id } = req.body;
+  
+    // Find the user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+  
+    // Check if the old department exists
+    if (!user.department.includes(oldDepartment)) {
+      return res.status(400).json({ success: false, message: "Department does not exist" });
+    }
+  
+    // Update the department
+    user.department = user.department.map((dept) =>
+      dept === oldDepartment ? newDepartment : dept
+    );
+  
+    await user.save();
+  
+    return res.status(200).json({ success: true, message: "Department updated successfully" });
+  }
 
 exports.EmployeeRegister = async (req, res) => {
     try {

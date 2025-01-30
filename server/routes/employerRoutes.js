@@ -9,6 +9,7 @@ const {
     addDepartment,
     getDepartment,
     deleteDepartment,
+    editDepartment,
     EmployeeRegister,
 } = require('../controllers/employerController');
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -26,4 +27,5 @@ router.post('/employee-register',EmployeeRegister)
 router.post('/addDepartment',addDepartment)
 router.post('/getDepartment',getDepartment)
 router.post('/deleteDepartment',deleteDepartment)
+router.post('/editDepartment',editDepartment)
 module.exports = router;
