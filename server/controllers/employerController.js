@@ -393,3 +393,257 @@ exports.addEmployee = async (req, res) => {
         res.status(500).json({ message: "Internal server error." });
     }
 };
+
+exports.assignWork = async (req, res) => {
+    try {
+        const { formSData, employeeId } = req.body;
+        
+        // Find the employee by ID
+        const employee = await Employee.findById(employeeId);
+        if (!employee) {
+            return res.status(400).json({ message: "No employee found" });
+        }
+
+        // Update only the specific employee
+        await Employee.updateOne(
+            { _id: employeeId }, 
+            { $set: { shift: formSData.shift, department: formSData.department, tasks: formSData.task } }
+        );
+
+        return res.status(200).json({
+            message: "Successfully registered employee and assigned work",
+        });
+
+    } catch (error) {
+        console.error("Error assigning work:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+exports.getEmployees = async (req,res) =>{
+    const {id} = req.body;
+
+    const employees = await Employee.findOne({employer : id})
+    if(!employees){
+        return res.status(200).json({
+            message : "No Employees Found"
+        })
+    }
+    return res.status(200).json({
+        success : true,
+        employees,
+        message : "Succesfully got the data"
+    })
+
+
+};
+
+exports.employeeCheckin = async (req,res)=>{
+    const { embedding, id } = req.body;
+    try {
+        const { embedding, id } = req.body;
+      
+
+        // Validate employer ID
+        if (!id) {
+            return res.status(400).json({ message: "Employer ID is required." });
+        }
+
+        // Convert embedding object to an array
+        let parsedEmbedding;
+        try {
+            if (Array.isArray(embedding)) {
+                parsedEmbedding = embedding.map(Number);
+            } else if (embedding instanceof Float32Array) {
+                parsedEmbedding = Array.from(embedding);
+            } else if (typeof embedding === "object" && embedding !== null) {
+                parsedEmbedding = Object.keys(embedding).map(key => Number(embedding[key]));
+            } else {
+                throw new Error("Invalid embedding format.");
+            }
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid embedding format. Expected an array of numbers." });
+        }
+
+        // Ensure parsed embedding contains only valid numbers
+        if (!parsedEmbedding.every(num => typeof num === "number" && !isNaN(num))) {
+            return res.status(400).json({ message: "Embedding array contains invalid values." });
+        }
+
+      
+        // Fetch all employees under the given employer
+        let employees = await Employee.find({ employer: id });
+
+      // Check if embedding already exists in any employee
+for (let employee of employees) {
+    if (!employee.embeddings || employee.embeddings.length === 0) continue;
+
+    for (let storedEmbedding of employee.embeddings) {
+        const distance = faceapi.euclideanDistance(parsedEmbedding, storedEmbedding);
+
+        if (distance < 0.5) {  // Threshold for similarity
+
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Check if employee has already checked in today
+            let latestCheckIn = employee.checkInOut.find(entry => {
+                const entryDate = new Date(entry.date);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate.getTime() === today.getTime();
+            });
+
+            if (latestCheckIn) {
+                return res.status(200).json({
+                    message: "Already checked in for today.",
+                    success : false,
+                    employeeId: employee._id,
+                    latestCheckIn: {
+                        date: latestCheckIn.date,
+                        checkIn: latestCheckIn.checkIn,
+                        checkOut: latestCheckIn.checkOut
+                    }
+                });
+            }
+
+            // Mark check-in
+            const newCheckIn = {
+                date: new Date(),
+                checkIn: new Date(),
+                checkOut: null // Not checked out yet
+            };
+
+            employee.checkInOut.push(newCheckIn);
+
+            await employee.save(); // Save the updated employee record
+
+            return res.status(200).json({
+                message: "Check-in successful.",
+                success: true,
+                employeeId: employee._id,
+                checkInTime: newCheckIn.checkIn
+            });
+        }
+    }
+}
+
+    
+    }
+    catch(error){
+        return res.status(400).json({
+            message : "Server error "
+        })
+    }
+
+    
+}
+exports.employeeCheckOut = async (req, res) => {
+    const { embedding, id } = req.body;
+    try {
+        if (!id) {
+            return res.status(400).json({ message: "Employer ID is required." });
+        }
+
+        let parsedEmbedding;
+        try {
+            if (Array.isArray(embedding)) {
+                parsedEmbedding = embedding.map(Number);
+            } else if (embedding instanceof Float32Array) {
+                parsedEmbedding = Array.from(embedding);
+            } else if (typeof embedding === "object" && embedding !== null) {
+                parsedEmbedding = Object.keys(embedding).map(key => Number(embedding[key]));
+            } else {
+                throw new Error("Invalid embedding format.");
+            }
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid embedding format. Expected an array of numbers." });
+        }
+
+        if (!parsedEmbedding.every(num => typeof num === "number" && !isNaN(num))) {
+            return res.status(400).json({ message: "Embedding array contains invalid values." });
+        }
+
+        let employees = await Employee.find({ employer: id });
+
+        for (let employee of employees) {
+            if (!employee.embeddings || employee.embeddings.length === 0) continue;
+
+            for (let storedEmbedding of employee.embeddings) {
+                const distance = faceapi.euclideanDistance(parsedEmbedding, storedEmbedding);
+
+                if (distance < 0.5) {  // Threshold for similarity
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    let latestEntry = employee.checkInOut.find(entry => {
+                        const entryDate = new Date(entry.date);
+                        entryDate.setHours(0, 0, 0, 0);
+                        return entryDate.getTime() === today.getTime();
+                    });
+
+                    if (latestEntry) {
+                        if (latestEntry.checkOut) {
+                            return res.status(200).json({
+                                message: "Already checked out for today.",
+                                success: false,
+                                employeeId: employee._id,
+                                latestEntry
+                            });
+                        }
+                        
+                        latestEntry.checkOut = new Date();
+                        await employee.save();
+                        return res.status(200).json({
+                            message: "Check-out successful.",
+                            success: true,
+                            employeeId: employee._id,
+                            checkOutTime: latestEntry.checkOut
+                        });
+                    }
+
+                    const newCheckIn = {
+                        date: new Date(),
+                        checkIn: new Date(),
+                        checkOut: null
+                    };
+
+                    employee.checkInOut.push(newCheckIn);
+                    await employee.save();
+
+                    return res.status(200).json({
+                        message: "Check-in successful.",
+                        success: true,
+                        employeeId: employee._id,
+                        checkInTime: newCheckIn.checkIn
+                    });
+                }
+            }
+        }
+
+        return res.status(400).json({ message: "Face not recognized." });
+    } catch (error) {
+        return res.status(500).json({ message: "Server error." });
+    }
+};
+
+
+
+
+exports.getEmployee = async (req,res) =>{
+    const {id , employeeId} = req.body;
+
+    const employees = await Employee.findOne({employer : id})
+    if(!employees){
+        return res.status(200).json({
+            message : "No Employees Found"
+        })
+    }
+    return res.status(200).json({
+        success : true,
+        employees,
+        message : "Succesfully got the data"
+    })
+
+
+};

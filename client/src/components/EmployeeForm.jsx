@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import FaceDetectionForm from "./FaceDetectionForm";
-import PersonalInfoForm from "./PersonalInfoForm";
-import DepartmentShiftTaskForm from "./DepartmentShiftTaskForm";
-import OtpVerificationPage from "./OtpVerificationPage";
+
 
 const EmployeeRegistration = () => {
   const [step, setStep] = useState(1);

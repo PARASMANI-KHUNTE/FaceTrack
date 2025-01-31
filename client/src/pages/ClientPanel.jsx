@@ -1,6 +1,7 @@
 import  { useState } from "react";
 import { motion } from "framer-motion";
 import Dashboard from "../components/Dashboard";
+import Employee from "../components/Employee";
 import EmployeeList from "../components/EmployeeList";
 import Attendance from "../components/Attendance";
 import Report from "../components/Report";
@@ -13,7 +14,8 @@ const ClientPanel = () => {
   // Sidebar items
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: "🏠" },
-    { id: "employeelist", label: "Employee List", icon: "👥" },
+    { id: "Employee", label: "Employee", icon: "👥" },
+    { id: "EmployeeList", label: "Employee List", icon: "👥" },
     { id: "attendance", label: "Attendance", icon: "📅" },
     { id: "department", label: "Departments", icon: "🏬" },
     { id: "report", label: "Report", icon: "📊" },
@@ -25,7 +27,9 @@ const ClientPanel = () => {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
-      case "employeelist":
+      case "Employee":
+        return <Employee />;
+      case "EmployeeList":
         return <EmployeeList />;
       case "attendance":
         return <Attendance />;

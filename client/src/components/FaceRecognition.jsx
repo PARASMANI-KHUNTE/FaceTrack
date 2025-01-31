@@ -1,18 +1,38 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
-import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import api from "../utils/api";
+import { toast } from "react-toastify";
 
-const FaceRecognition = ({ onNext }) => {
+const FaceRecognition = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [embedding, setEmbedding] = useState(null);
+  const [responseData, setResponseData] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      setUserId(decoded.userId);
+    }
+  }, []);
 
   useEffect(() => {
     const loadModels = async () => {
-      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-      await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-      await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri("/weights");
+        await faceapi.nets.faceLandmark68Net.loadFromUri("/weights");
+        await faceapi.nets.faceRecognitionNet.loadFromUri("/weights");
+        console.log("Models loaded successfully");
+        setModelsLoaded(true);
+      } catch (error) {
+        console.error("Error loading models:", error);
+      }
     };
     loadModels();
   }, []);
@@ -38,6 +58,10 @@ const FaceRecognition = ({ onNext }) => {
   };
 
   const captureFace = async () => {
+    if (!modelsLoaded) {
+      alert("Face detection models are still loading. Please wait.");
+      return;
+    }
     if (!videoRef.current || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
@@ -50,27 +74,52 @@ const FaceRecognition = ({ onNext }) => {
     const imageData = canvas.toDataURL("image/jpeg");
     setCapturedImage(imageData);
     
-    const detection = await faceapi
-      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    if (detection) {
-      await sendEmbeddingToBackend(detection.descriptor);
-      stopVideo();
-    } else {
-      alert("No face detected. Please try again.");
-    }
-  };
-
-  const sendEmbeddingToBackend = async (embedding) => {
     try {
-      const response = await axios.post("http://localhost:3000/face-recognition", { embedding });
-      console.log("Face embedding sent successfully:", response.data);
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+      
+      if (detection) {
+        setEmbedding(detection.descriptor); // Store the embedding in state
+        stopVideo();
+      } else {
+        alert("No face detected. Please try again.");
+      }
     } catch (error) {
-      console.error("Error sending embedding:", error);
+      console.error("Error detecting face:", error);
+      alert("Face detection failed. Ensure models are loaded and try again.");
     }
   };
+
+  const handleCheckIn = async () => {
+    if (!embedding) {
+      alert("Please capture your face first.");
+      return;
+    }
+    await sendEmbeddingToBackend("Checkin");
+  };
+
+  const handleCheckOut = async () => {
+    if (!embedding) {
+      alert("Please capture your face first.");
+      return;
+    }
+    await sendEmbeddingToBackend("Checkout");
+  };
+
+  const sendEmbeddingToBackend = async (action) => {
+    try {
+      const response = await api.post(`/employers/employee${action}`, { embedding, id: userId });
+      console.log(`Face embedding sent successfully for ${action}:`, response.data);
+      setCapturedImage("");
+      setResponseData(response.data);
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error(`Error sending embedding for ${action}:`, error);
+    }
+  };
+
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -86,8 +135,13 @@ const FaceRecognition = ({ onNext }) => {
         <button onClick={captureFace} className="bg-blue-500 text-white px-4 py-2 rounded" disabled={!isCameraOn}>
           Capture Face
         </button>
+        <button onClick={handleCheckIn} className="bg-green-500 text-white px-4 py-2 rounded" disabled={!embedding}>
+          Check In
+        </button>
+        <button onClick={handleCheckOut} className="bg-red-500 text-white px-4 py-2 rounded" disabled={!embedding}>
+          Check Out
+        </button>
       </div>
-      <button onClick={onNext} className="bg-gray-500 text-white px-4 py-2 rounded">Next</button>
     </div>
   );
 };
