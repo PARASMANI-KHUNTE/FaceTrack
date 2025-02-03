@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   url: { type: String },
   role: { type: String, enum: ['admin', 'employer', 'employee'], required: true },
+  employeeId : { type: mongoose.Schema.Types.ObjectId, ref: 'Employee'}
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

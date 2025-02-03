@@ -314,6 +314,7 @@ exports.checkEmployeeFace = async (req, res) => {
 
             return res.status(201).json({
                 message: "New face registered successfully",
+                success : true ,
                 employeeId: newEmployee._id
             });
         }
@@ -328,6 +329,7 @@ exports.checkEmployeeFace = async (req, res) => {
                 if (distance < 0.5) {  // Threshold for similarity
                     return res.status(200).json({
                         message: "Face already exists",
+                        success : false,
                         employeeId: employee._id
                     });
                 }
@@ -340,6 +342,7 @@ exports.checkEmployeeFace = async (req, res) => {
 
         return res.status(201).json({
             message: "New face registered successfully",
+            success : true ,
             employeeId: employees[0]._id
         });
 
@@ -411,12 +414,14 @@ exports.assignWork = async (req, res) => {
         );
 
         return res.status(200).json({
+            success : true ,
             message: "Successfully registered employee and assigned work",
         });
 
     } catch (error) {
+       
         console.error("Error assigning work:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        return res.status(500).json({ message: "Error assigning work" , success : false  });
     }
 };
 
@@ -429,6 +434,8 @@ exports.getEmployees = async (req,res) =>{
             message : "No Employees Found"
         })
     }
+    
+    
     return res.status(200).json({
         success : true,
         employees,
@@ -639,6 +646,12 @@ exports.getEmployee = async (req,res) =>{
             message : "No Employees Found"
         })
     }
+    // let userdata =[]
+    // let noOfemployees = employees.length()
+    // for(i;i>=noOfemployees,i++){
+    //     const employee = await User.findOne({employeeId})
+    //     if(employee)
+    // }
     return res.status(200).json({
         success : true,
         employees,

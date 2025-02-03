@@ -23,7 +23,7 @@ const Employee= () => {
 
   // Function to move to the next step
   const handleNext = () => {
-    console.log("ode ja")
+
     setCurrentStep((prevStep) => prevStep + 1);
   };
 
@@ -60,15 +60,22 @@ const Employee= () => {
     
 
     try {
-        await api.post("/employers/submit-registration", {formSData,employeeId}, {
+        const response =  await api.post("/employers/submit-registration", {formSData,employeeId}, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        toast.success("Registration successful");
+        console.log("response - ", response)
+        if(response.data.success){
+          toast.success("Registration successful");
         setCurrentStep(0)
         newEmployee(false)
+        }else{
+          toast.error(response.data.message)
+        }
+        
     } catch (error) {
+      console.log(error)
         toast.error("Error submitting registration");
    
     }
@@ -209,7 +216,7 @@ const Employee= () => {
   
     const captureFace = async () => {
       if (!modelsLoaded) {
-        alert("Face detection models are still loading. Please wait.");
+        toast("Face detection models are still loading. Please wait.");
         return;
       }
       if (!videoRef.current || !canvasRef.current) return;
@@ -231,14 +238,15 @@ const Employee= () => {
           .withFaceDescriptor();
         
         if (detection) {
-          await sendEmbeddingToBackend(detection.descriptor);
+           await sendEmbeddingToBackend(detection.descriptor);
+      
           stopVideo();
         } else {
-          alert("No face detected. Please try again.");
+          toast.error("No face detected. Please try again.");
         }
       } catch (error) {
         console.error("Error detecting face:", error);
-        alert("Face detection failed. Ensure models are loaded and try again.");
+        toast.error("Face detection failed. Ensure models are loaded and try again.");
       }
     };
   
@@ -250,7 +258,16 @@ const Employee= () => {
             },
           });
           console.log("Face embedding sent successfully:", response.data);
-          setEmployeeId(response.data.employeeId); // Store employeeId
+         if (response.data.success == true){
+            handleNext()
+            setEmployeeId(response.data.employeeId);
+            setCapturedImage(null)
+            toast.success(response.data.message)
+          }else{
+            toast.error(`Face Already Exist`)
+            setCapturedImage(null)
+          }
+           // Store employeeId
         } catch (error) {
           console.error("Error sending embedding:", error);
         }
@@ -262,7 +279,7 @@ const Employee= () => {
    <div className="flex flex-col gap-2  p-6 rounded-lg shadow-lg">
    <div className="bg-white p-6 rounded-lg shadow-lg">
       <nav className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Employee List</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Add Employee </h2>
         <button 
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
           onClick={handelAddEmployee}
@@ -287,14 +304,6 @@ const Employee= () => {
          Capture Face
        </button>
      </div>
-     <button 
-onClick={() => {handleNext(),
- stopVideo();
-}} 
-className="bg-gray-500 text-white px-4 py-2 rounded"
->
-Next
-</button>
 
    </div>
   }
@@ -303,7 +312,13 @@ Next
       <h2 className="text-xl font-bold">Personal Information</h2>
       <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} className="w-full p-2 border rounded" required />
       <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded" required />
-      <input type="tel" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} className="w-full p-2 border rounded" required />
+      <input type="tel" name="phone" placeholder="Phone" value={formData.phone}  onChange={(e) => {
+            const value = e.target.value;
+            // Only update if the length is <= 10 and contains only numbers
+            if (value.length <= 10 && /^[0-9]*$/.test(value)) {
+              setFormData({ ...formData, phone: value });
+            }
+          }} className="w-full p-2 border rounded" required />
       <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full p-2 border rounded" required />
       <div className="flex justify-between">
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
@@ -336,7 +351,7 @@ Next
       </div>
     </div>}
 
-    {currentStep >= 2 &&    <form onSubmit={handleSSubmit} className="bg-white p-6 rounded-lg shadow-lg space-y-4">
+    {currentStep >= 4 &&    <form onSubmit={handleSSubmit} className="bg-white p-6 rounded-lg shadow-lg space-y-4">
       <h2 className="text-xl font-bold">Department, Shift, Task</h2>
       <select 
   name="department" 

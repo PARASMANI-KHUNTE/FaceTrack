@@ -12,7 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import OtpPrompt from "./components/OtpPrompt";
-import EmployeeForm from "./components/EmployeeForm";
+
 
 
 const App = () => {
@@ -34,9 +34,7 @@ const App = () => {
           <OtpPrompt />
             </ProtectedRoute>} />
             
-        <Route path="/employee-form" element={ <ProtectedRoute>
-          <EmployeeForm />
-            </ProtectedRoute>} />
+   
             
         
       
