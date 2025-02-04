@@ -19,6 +19,9 @@ app.use('/api/employers', employerRoutes);
 app.get('/', (req, res) => {
     res.send('Employee Management System API');
 });
+app.get('/test', (req, res) => {
+    res.send('Employee Management System API');
+});
 
 const PORT = process.env.PORT || 5000;
 
