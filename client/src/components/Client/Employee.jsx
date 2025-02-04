@@ -158,12 +158,10 @@ const Employee= () => {
       if (response.status === 201) { 
         toast.success(response.data.message);
         handleNext()
-      } else {
-        toast.error(response.data.message || "Something went wrong.");
-      }
+      } 
     } catch (error) {
       console.error("Error adding employee:", error);
-      toast.error(error.response?.data?.message || "Error checking user. Please try again.");
+      // toast.error(error.response?.data?.message || "Error checking user. Please try again.");
     }
   };
 

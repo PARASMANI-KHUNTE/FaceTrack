@@ -24,12 +24,7 @@ const employeeSchema = new mongoose.Schema({
       date: { type: Date, required: true }, // Date of check-in/out
       checkIn: { type: Date }, // Check-in timestamp
       checkOut: { type: Date }, // Check-out timestamp
-    },
-  ],
-  hours: [
-    {
-      date: { type: Date, required: true }, // Date of work
-      duration: { type: Number, default: 0 }, // Work duration in hours
+      hours: {type : Number},
     },
   ],
   leaves: [
@@ -39,5 +34,20 @@ const employeeSchema = new mongoose.Schema({
     },
   ],
 }, { timestamps: true });
+
+
+
+
+// Pre-save hook: calculate hours for each entry where checkOut is set
+employeeSchema.pre("save", function (next) {
+  this.checkInOut.forEach((entry) => {
+    if (entry.checkIn && entry.checkOut) {
+      const diffMs = entry.checkOut - entry.checkIn; // milliseconds
+      const totalHours = diffMs / (1000 * 60 * 60);  // convert to hours
+      entry.hours = parseFloat(totalHours.toFixed(2));
+    }
+  });
+  next();
+});
 
 module.exports = mongoose.model('Employee', employeeSchema);

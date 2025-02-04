@@ -446,7 +446,7 @@ exports.getEmployees = async (req,res) =>{
 };
 
 exports.employeeCheckin = async (req,res)=>{
-    const { embedding, id } = req.body;
+
     try {
         const { embedding, id } = req.body;
       

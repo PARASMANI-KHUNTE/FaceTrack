@@ -3,6 +3,7 @@ const argon2 = require('argon2')
 const {sendOTP,verifyOTP} =  require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
 const { generateToken, tokenVerify ,generateTokenForPassword} = require('../utils/tokenProvider')
+const Employee = require('../models/Employee')
 exports.signupAsEmployer = async (req,res) => {
     try {
         const { name, email, phone, password, organization } = req.body;
@@ -419,5 +420,36 @@ exports.checkForExistence = async (req, res) => {
               error: error.message,
           });
       }
+  };
+  
+
+
+
+
+  exports.getUserByEmployeeId = async (req, res) => {
+    try {
+      const { employeeId } = req.body;
+      // Find user data by employeeId in the User collection
+      const userData = await User.findOne({employeeId});
+      if (!userData) {
+        return res.status(400).json({
+          success: false,
+          message: "No user data found for this employee",
+        });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "User data found for the given employee ID",
+        data: userData,
+      });
+  
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error while fetching user data",
+      });
+    }
   };
   

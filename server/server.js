@@ -10,7 +10,7 @@ db()
 
 app.use(express.json());
 app.use(cors({
-    origin : "https://facetrack-0s10.onrender.com"
+    origin : ["https://facetrack-0s10.onrender.com","http://localhost:5173"]
 }))
 
 app.use('/api/users', userRoutes);
