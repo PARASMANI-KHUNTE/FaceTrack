@@ -3,7 +3,7 @@ const argon2 = require('argon2')
 const {sendOTP,verifyOTP} =  require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
 const { generateToken, tokenVerify ,generateTokenForPassword} = require('../utils/tokenProvider')
-const signupAsEmployer = async (req,res) => {
+exports.signupAsEmployer = async (req,res) => {
     try {
         const { name, email, phone, password, organization } = req.body;
 
@@ -61,7 +61,7 @@ const signupAsEmployer = async (req,res) => {
         });
     }
 };
-const VerifyOtp = async (req, res) => {
+exports.VerifyOtp = async (req, res) => {
     try {
       const { email, otp } = req.body;
   
@@ -109,7 +109,7 @@ const VerifyOtp = async (req, res) => {
       });
     }
   };
-const loginAsEmployer = async (req, res) => {
+exports.loginAsEmployer = async (req, res) => {
         try {
           const { email, password } = req.body;
       
@@ -176,7 +176,7 @@ const loginAsEmployer = async (req, res) => {
         }
       };
 
-const resetPassword = async (req,res) =>{
+exports.resetPassword = async (req,res) =>{
     const { email } = req.body;
 
     // Validate email input
@@ -209,7 +209,7 @@ const resetPassword = async (req,res) =>{
     }
 }
 
-const updatePassword = async (req,res) =>{
+exports.updatePassword = async (req,res) =>{
     const { email, password } = req.body;
 
     // Validate the input
@@ -247,63 +247,60 @@ const updatePassword = async (req,res) =>{
 }
 
 
-const googleLogin =  async (req, res) => {
-    const { googleId, name, email, picture } = req.body;
-  
-    if (!googleId || !name || !email || !picture) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-  
-    try {
-    
 
-      let user = await User.findOne({ googleId }).lean(); // Avoid redundant queries
-  
-      if (!user) {
-        // Create a new user if not found
-        user = await User.create({
-          name,
-          email,
-          googleId,
-          profileUrl: picture,
-          isVerified : true,
-          role : "employer"
-        });
-  
-        const payload = {
-          userId: user.id,
-          name: user.name,
-          ProfileUrl: user.profileUrl,
-          email: user.email,
-        };
-  
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
-        return res.status(200).json({
-          token: token,
-          message: "Account has been created",
-        });
-      }
-  
-      // If user exists, generate token
-      const payload = {
-        userId: user._id,
-        name: user.name,
-        ProfileUrl: user.profileUrl,
-        email: user.email,
-      };
-  
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
-      return res.status(200).json({
-        token: token,
-        message: "Login Successful",
-      });
-    } catch (error) {
-      console.error("Error in GoogleLogin route:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
+exports.googleLogin = async (req, res) => {
+  console.log("Received Data:", req.body);
+  const { googleId, name, email, profileUrl, organization, phone } = req.body;
+
+  // Check for missing fields
+  if (!googleId || !name || !email || !profileUrl || !organization || !phone) {
+    return res.status(400).json({ success: false, message: "Missing required fields" });
   }
+
+  try {
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      // Create a new user if not found
+      user = new User({
+        name,
+        email,
+        googleId,
+        profileUrl,
+        isVerified: true,
+        organization,
+        phone,
+        role: "employer",
+      });
+
+      try {
+        await user.save(); // Save the new user
+      } catch (saveError) {
+        console.error("Error creating user:", saveError);
+        return res.status(500).json({ success: false, message: "Error creating user" });
+      }
+
+      const token = jwt.sign(
+        { userId: user._id, name: user.name, profileUrl: user.profileUrl, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      return res.status(201).json({
+        success: true,
+        token,
+        message: "Account has been created successfully",
+      });
+    }
+
+    
+  } catch (error) {
+    console.error("Error in GoogleLogin route:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
   
-const getUserById = async (req, res) => {
+exports.getUserById = async (req, res) => {
     const { id } = req.params; // Extract the user ID from the request parameters
   
     // Validate the input
@@ -337,7 +334,7 @@ const getUserById = async (req, res) => {
     }
   };
 
-const verifyToken = async (req,res) =>{
+exports.verifyToken = async (req,res) =>{
   const {token} = req.body;
   try {
     await tokenVerify(token)
@@ -355,8 +352,7 @@ const verifyToken = async (req,res) =>{
   
   
 }
-  
-const updateProfileDetails  = async (req, res) => {
+exports.updateProfileDetails  = async (req, res) => {
       const { name, phone, organization } = req.body;
       const userId = req.user.userId; // Use "userId" as defined in the token payload.
 
@@ -380,5 +376,48 @@ const updateProfileDetails  = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error." });
       }
     }
+
+exports.checkForExistence = async (req, res) => {
+      try {
+          const { email, googleId } = req.body;
   
-module.exports =  {signupAsEmployer ,VerifyOtp ,loginAsEmployer,loginAsEmployer,resetPassword,updatePassword ,googleLogin,getUserById,updateProfileDetails,verifyToken}
+          if (!email && !googleId) {
+              return res.status(400).json({
+                  success: false,
+                  message: "Email or Google ID is required",
+              });
+          }
+  
+          const user = await User.findOne({ $or: [{ email }, { googleId }] });
+  
+          if (!user) {
+              return res.status(404).json({
+                  success: false,
+                  message: "User does not exist",
+              });
+          }
+                  // If user exists, generate token
+            const token = jwt.sign(
+              { userId: user._id, name: user.name, profileUrl: user.profileUrl, email: user.email },
+              process.env.JWT_SECRET,
+              { expiresIn: "24h" }
+            );
+
+            return res.status(200).json({
+              success: true,
+              token,
+              message: "Login Successful",
+              user
+            });
+          
+                
+  
+      } catch (error) {
+          return res.status(500).json({
+              success: false,
+              message: "Internal server error",
+              error: error.message,
+          });
+      }
+  };
+  

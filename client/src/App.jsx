@@ -9,6 +9,7 @@ import ClientPanel from './pages/ClientPanel';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import OtpPrompt from "./components/utilsComponents/OtpPrompt";
+import ContinueWithGoogle from "./pages/Auth/ContinueWithGoogle";
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/update-password" element={<UpdatePassword />} />
+        <Route path="/ContinueWithGoogle" element={<ContinueWithGoogle />} />
 
         {/* Protected Routes */}
         <Route

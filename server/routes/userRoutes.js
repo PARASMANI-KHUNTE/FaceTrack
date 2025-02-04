@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
-const {signupAsEmployer ,VerifyOtp,loginAsEmployer ,resetPassword , updatePassword ,googleLogin,getUserById,updateProfileDetails,verifyToken} = require('../controllers/userController');
+const {checkForExistence,signupAsEmployer ,VerifyOtp,loginAsEmployer ,resetPassword , updatePassword ,googleLogin,getUserById,updateProfileDetails,verifyToken} = require('../controllers/userController');
 
 router.post('/signup-employer', signupAsEmployer);
 router.post('/verify-otp' , VerifyOtp );
@@ -12,5 +12,6 @@ router.post('/GoogleLogin',googleLogin )
 router.get('/:id',getUserById);
 router.post('/verify-token',verifyToken);
 router.put("/updateProfileDetails",authMiddleware,updateProfileDetails)
+router.post("/checkForExistence", checkForExistence);
 
 module.exports = router;

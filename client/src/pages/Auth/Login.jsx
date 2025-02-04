@@ -38,12 +38,7 @@ const Login = () => {
 
       const decoded = jwtDecode(token); // Decode the token
       const { sub: googleId, name, email, picture } = decoded; // Extract details
-      const response = await api.post('users/GoogleLogin', { googleId, name, email, picture });
-      localStorage.setItem('token', response.data.token);
-    
-      toast.success("Login Successful");
-      toast.success('Google login successful!');
-      navigate('/client-panel');
+      navigate('/ContinueWithGoogle',{state : {googleId :googleId , name : name, email : email, picture : picture }})
     } catch (error) {
       console.error(error);
     }
