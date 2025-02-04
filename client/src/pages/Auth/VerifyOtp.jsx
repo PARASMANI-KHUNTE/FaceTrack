@@ -1,7 +1,7 @@
 import  { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../utils/api';
-import Loader from '../components/Loader';
+import api from '../../utils/api';
+import Loader from '../../components/utilsComponents/Loader';
 import { toast } from 'react-toastify';
 
 const VerifyOtp = () => {

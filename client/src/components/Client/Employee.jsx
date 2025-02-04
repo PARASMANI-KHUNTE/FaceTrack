@@ -3,7 +3,7 @@ import  { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
-import api from "../utils/api";
+import api from "../../utils/api";
 
 const Employee= () => {
   const [currentStep, setCurrentStep] = useState(1);

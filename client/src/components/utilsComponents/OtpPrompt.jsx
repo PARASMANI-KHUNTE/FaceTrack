@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../utils/api";
+import api from "../../utils/api";
 
 const OtpPrompt = () => {
   const [otp, setOtp] = useState("");
@@ -41,6 +41,7 @@ const OtpPrompt = () => {
         toast.error("Failed to delete the account. Please try again.");
       }
     } catch (error) {
+      console.log(`Error - ${error}`)
       toast.error("An error occurred. Please try again later.");
     }
   };

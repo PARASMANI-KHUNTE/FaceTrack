@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 import { jwtDecode } from "jwt-decode";
-import api from "../utils/api";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 
 const FaceRecognition = () => {

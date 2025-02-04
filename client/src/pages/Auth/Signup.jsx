@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import api from '../utils/api';
-import Loader from '../components/Loader';
-import { toast } from '../components/Toast';
+import api from '../../utils/api';
+import Loader from '../../components/utilsComponents/Loader';
+import { toast } from '../../components/utilsComponents/Toast';
 import {jwtDecode} from 'jwt-decode';
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Client/Navbar";
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import api from '../utils/api';
+import api from '../../utils/api';
 import { jwtDecode } from "jwt-decode";
 
 const EmployeeList = () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
-import api from "../utils/api";
+import api from "../../utils/api";
 
 const Departments = () => {
   const [departments, setDepartments] = useState([]);

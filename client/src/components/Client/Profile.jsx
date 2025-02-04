@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import api from "../utils/api";
+import api from "../../utils/api";
 import { jwtDecode } from "jwt-decode";
 
 const Profile = () => {
