@@ -1,5 +1,4 @@
-import  { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import Dashboard from "../components/Client/Dashboard";
 import Employee from "../components/Client/Employee";
 import EmployeeList from "../components/Client/EmployeeList";
@@ -7,9 +6,11 @@ import Attendance from "../components/Client/Attendance";
 import Report from "../components/Client/Report";
 import Profile from "../components/Client/Profile";
 import Departments from "../components/Client/Departments";
+import { Menu } from "lucide-react";
 
 const ClientPanel = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Sidebar items
   const sidebarItems = [
@@ -45,13 +46,18 @@ const ClientPanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-900 to-blue-900 flex">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-900 to-blue-900">
+      {/* Mobile Menu Button */}
+      <button 
+        className="md:hidden p-4 text-white" 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        <Menu size={28} />
+      </button>
+
       {/* Sidebar */}
-      <motion.div
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-64 bg-gray-800 bg-opacity-90 backdrop-blur-md text-white p-6"
+      <div 
+        className={`absolute min-h-screen md:relative bg-gray-800 bg-opacity-90 backdrop-blur-md text-white p-6 w-64 md:w-72 h-full z-50 md:block transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <h1 className="text-2xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
           Client Panel
@@ -65,24 +71,22 @@ const ClientPanel = () => {
                   ? "bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg"
                   : "hover:bg-gray-700"
               }`}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsSidebarOpen(false);
+              }}
             >
               <span className="text-xl">{item.icon}</span>
               <span className="text-lg">{item.label}</span>
             </li>
           ))}
         </ul>
-      </motion.div>
+      </div>
 
       {/* Main Content */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex-1 p-8 overflow-y-auto"
-      >
+      <div className="flex-1 p-4 md:p-8 overflow-auto min-w-0">
         {renderContent()}
-      </motion.div>
+      </div>
     </div>
   );
 };

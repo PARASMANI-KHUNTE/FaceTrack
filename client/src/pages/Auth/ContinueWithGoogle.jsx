@@ -20,7 +20,6 @@ const ContinueWithGoogle = () => {
     organization: '',
   });
 
-  console.log(formData);
 
   // Check if the user already exists
   const checkForExistence = async () => {
@@ -30,13 +29,11 @@ const ContinueWithGoogle = () => {
       if (!response.data?.success) {
         setGetData(true);
       } else {
-        toast.success(response.data.message);
         localStorage.setItem('token',response.data.token)
         navigate('/client-panel');
       }
     } catch (error) {
       console.error(error);
-      toast.error('An error occurred. Please try again.');
       setGetData(true); // Allow form submission even if check fails
     }
   };
@@ -56,9 +53,7 @@ const ContinueWithGoogle = () => {
         toast.success(response.data.message);
         localStorage.setItem('token',response.data.token)
         navigate('/client-panel');
-      } else {
-        toast.error(response.data.message);
-      }
+      } 
     } catch (error) {
       console.error(error);
   
