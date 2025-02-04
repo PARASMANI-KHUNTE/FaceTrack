@@ -1,48 +1,56 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import FaceTrackLandingPage from "./pages/FaceTrackLandingPage";
-import Signup from './pages/Signup';
-import VerifyOtp from './pages/VerifyOtp';
-import Login from './pages/Login';
-import ResetPassword from './pages/ResetPassword';
-import UpdatePassword from './pages/UpdatePassword';
+import Signup from './pages/Auth/Signup';
+import VerifyOtp from './pages/Auth/VerifyOtp';
+import Login from './pages/Auth/Login';
+import ResetPassword from './pages/Auth/ResetPassword';
+import UpdatePassword from './pages/Auth/UpdatePassword';
 import ClientPanel from './pages/ClientPanel';
-import ProtectedRoute from './components/ProtectedRoute';
-
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import OtpPrompt from "./components/OtpPrompt";
+import OtpPrompt from "./components/utilsComponents/OtpPrompt";
 
-
+// Protected Route Wrapper
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token'); // Check if the user is authenticated
+  return isAuthenticated ? children : <Navigate to="/login" />; // Redirect to login if not authenticated
+};
 
 const App = () => {
   return (
     <Router>
       <Routes>
-
+        {/* Public Routes */}
         <Route path="/" element={<FaceTrackLandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/update-password" element={<UpdatePassword />} />
-        <Route path="/client-panel" element={ <ProtectedRoute>
+
+        {/* Protected Routes */}
+        <Route
+          path="/client-panel"
+          element={
+            <ProtectedRoute>
               <ClientPanel />
-            </ProtectedRoute>} />
-        <Route path="/otpPrompt" element={ <ProtectedRoute>
-          <OtpPrompt />
-            </ProtectedRoute>} />
-            
-   
-            
-        
-      
-        
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/otpPrompt"
+          element={
+            <ProtectedRoute>
+              <OtpPrompt />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback Route (Optional) */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <ToastContainer />
     </Router>
-
   );
 };
 

@@ -1,4 +1,4 @@
-import FaceRecognition from "./FaceRecognition";
+import FaceRecognition from "../utilsComponents/FaceRecognition";
 const Attendance = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">

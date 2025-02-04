@@ -1,12 +1,12 @@
 import  { useState } from "react";
 import { motion } from "framer-motion";
-import Dashboard from "../components/Dashboard";
-import Employee from "../components/Employee";
-import EmployeeList from "../components/EmployeeList";
-import Attendance from "../components/Attendance";
-import Report from "../components/Report";
-import Profile from "../components/Profile";
-import Departments from "../components/Departments";
+import Dashboard from "../components/Client/Dashboard";
+import Employee from "../components/Client/Employee";
+import EmployeeList from "../components/Client/EmployeeList";
+import Attendance from "../components/Client/Attendance";
+import Report from "../components/Client/Report";
+import Profile from "../components/Client/Profile";
+import Departments from "../components/Client/Departments";
 
 const ClientPanel = () => {
   const [activeTab, setActiveTab] = useState("dashboard");

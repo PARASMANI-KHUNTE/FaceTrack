@@ -8,7 +8,7 @@ import {
 
 } from "react-icons/fa";
 
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Client/Navbar";
 const FaceTrackLandingPage = () => {
 
   return (
